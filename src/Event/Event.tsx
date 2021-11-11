@@ -1,30 +1,34 @@
 import React from 'react';
 import './Event.scss'
+import EventBadge from '../EventBadge/EventBadge'
 import { Image } from 'react-bootstrap';
-import { Endpoints } from '@octokit/types'
-import eventInfo from '../utils/events';
+import { IEventInfo } from '../utils/events';
 import { actorURL } from '../utils/actor';
 
 export interface IProps{
-  event: Endpoints["GET /events"]["response"]["data"][0]
+  eventInfo: IEventInfo
 }
 
 export default class Event extends React.Component<IProps> {
   render() {
-    const info = eventInfo(this.props.event)
-    if(info === null) return ""
+    const event = this.props.eventInfo;
+    if(event === null) return ""
     return (
       <div className="event">
-        {info.badge}
+        <EventBadge
+            color={event.color}
+            icon={event.icon}
+            content={event.type}
+          />
         <div className="mt-3 d-flex">
           <div className="me-4 d-flex flex-column">
-            <a href={actorURL(this.props.event.actor)}>
-              <Image height="80px" style={{minHeight: "80px"}} src={this.props.event.actor.avatar_url} rounded />
+            <a href={actorURL(event.event.actor)}>
+              <Image height="80px" style={{minHeight: "80px"}} src={event.event.actor.avatar_url + "?size=80"} rounded />
             </a>
             <small className="text-center mt-1">5 minutes ago</small>
           </div>
           <div>
-            {info.header}
+            {event.header}
           </div>
         </div>
       </div>
