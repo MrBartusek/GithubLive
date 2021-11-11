@@ -1,7 +1,6 @@
 import React from 'react';
 import './Event.scss'
 import { Image } from 'react-bootstrap';
-import EventBadge from '../EventBadge/EventBadge'
 import { Endpoints } from '@octokit/types'
 import eventInfo from '../utils/events';
 import { actorURL } from '../utils/actor';
@@ -20,7 +19,7 @@ export default class Event extends React.Component<IProps> {
         <div className="mt-3 d-flex">
           <div className="me-4 d-flex flex-column">
             <a href={actorURL(this.props.event.actor)}>
-              <Image width="80px" style={{minWidth: "80px"}} src={this.props.event.actor.avatar_url} rounded />
+              <Image height="80px" style={{minHeight: "80px"}} src={this.props.event.actor.avatar_url} rounded />
             </a>
             <small className="text-center mt-1">5 minutes ago</small>
           </div>
