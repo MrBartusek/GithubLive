@@ -40,7 +40,7 @@ export default class EventsFeed extends React.Component<IProps> {
 
       // Filter Events and remove duplicates
       events = events.filter((e) => this.filterEvent(e))
-      events = events.filter((v,i,a)=>a.findIndex(t=>(t.event.id === v.event.id))===i)
+      events = events.filter((e) => this.state.events.findIndex(x => x.event.id === e.event.id) === -1)
 
       // Slowly push all events
       if(events.length === 0) {
