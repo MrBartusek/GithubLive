@@ -34,7 +34,9 @@ export default class EventsFeed extends React.Component<IProps> {
       const eventId = Number(events[events.length - 1]?.event.id);
       if (lastEventId > 0) {
         const eventsMissed = (eventId - lastEventId)
-        this.props.onMissRateUpdate(100 / (eventsMissed + 100))
+        if(eventsMissed !== 0) {
+          this.props.onMissRateUpdate(100 / (eventsMissed + 100))
+        }
       }
       lastEventId = eventId;
 
@@ -66,7 +68,7 @@ export default class EventsFeed extends React.Component<IProps> {
   }
 
   filterEvent(event: IEventInfo): boolean {
-    return [EventType.ISSUE].includes(event.type)
+    return ![EventType.PUSH, null].includes(event.type)
   }
 
   render() {

@@ -9,13 +9,13 @@ import FeedSettings from '../FeedSettings/FeedSettings'
 
 export interface IState{
   octokit: Octokit,
-  updateMissRateHistory: Array<number>
+  missRateHistory: Array<number>
 }
 
 export default class App extends React.Component {
   state: IState = {
     octokit: new Octokit(),
-    updateMissRateHistory: []
+    missRateHistory: []
   }
 
   constructor(props) {
@@ -24,16 +24,16 @@ export default class App extends React.Component {
   }
 
   onMissRateUpdate(newRate: number) {
-    const newHistory = this.state.updateMissRateHistory.slice();
+    const newHistory = this.state.missRateHistory.slice();
     newHistory.push(newRate);
-    if(newHistory.length > 10) {
+    if(newHistory.length > 5) {
       newHistory.shift()
     }
-    this.setState({updateMissRateHistory: newHistory})
+    this.setState({missRateHistory: newHistory})
   }
 
   getMissRate(): string {
-    const history = this.state.updateMissRateHistory;
+    const history = this.state.missRateHistory;
     if(history.length === 0) return "**%"
     const average = Number(history.reduce((a,b) => a + b, 0)) / history.length;
     const percent = average * 100;
