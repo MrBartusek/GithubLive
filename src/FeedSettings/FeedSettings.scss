@@ -2,6 +2,23 @@
     background-color: white;
     width: 100%;
     padding: 24px;
-    border-radius: 16px;
+    border-radius: 6px;
     margin-bottom: 24px;
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.btn-success:focus {
+    background-color: var(--bs-success);
+}
+
+.btn-danger:focus {
+    background-color: var(--bs-danger);
+}
+
+.row + .row {
+    margin-top: 42px;
 }

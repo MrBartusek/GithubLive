@@ -1,11 +1,14 @@
 import "./EventList.scss"
-import React from 'react';
+import React, { Fragment } from 'react';
 import Event from '../Event/Event';
 import { Octokit } from '@octokit/rest';
 import FlipMove from "react-flip-move";
 import { delay } from "../utils/utils";
 import { eventInfo, IEventInfo } from "../utils/events";
+import { IFeedSettings } from '../EventFeed/EventFeed'
 import EventType from "../utils/eventType";
+import { Button } from "react-bootstrap"
+
 export interface IState{
   events: Array<IEventInfo>,
   animationDuration: number
@@ -13,7 +16,9 @@ export interface IState{
 
 export interface IProps {
   octokit: Octokit,
-  onMissRateUpdate: (num: number) => void;
+  settings: IFeedSettings,
+  onMissRateUpdate: (num: number) => void,
+  onSettingsUpdate: (settings: IFeedSettings) => void,
 }
 
 export default class EventList extends React.Component<IProps> {
@@ -21,12 +26,50 @@ export default class EventList extends React.Component<IProps> {
     events: [],
     animationDuration: 100
   }
-  running: boolean = true;
+  abortController: AbortController = new AbortController()
+  constructor(props) {
+    super(props)
+    this.onResetFilters = this.onResetFilters.bind(this)
+  }
 
   async componentDidMount() {
+    if(this.props.settings.running) {
+      return await this.updateFeed(this.abortController)
+    }
+  }
+
+  async componentDidUpdate(prevProps: IProps) {
+    const prevSettings = prevProps.settings
+    const settings = this.props.settings
+    if (prevSettings.running !== settings.running) {
+      if(settings.running) {
+        this.abortController = new AbortController()
+        return await this.updateFeed(this.abortController)
+      }
+      else {
+        this.abortController.abort()
+      }
+    }
+    if(prevSettings.filter !== settings.filter) {
+      this.setState({events: []})
+      if(settings.running) {
+        this.abortController.abort()
+        this.abortController = new AbortController()
+        return await this.updateFeed(this.abortController)
+      }
+    }
+    
+  }
+
+  componentWillUnmount() {
+    this.abortController.abort()
+  }
+
+  async updateFeed(abortController: AbortController): Promise<void> {
+    const settings = this.props.settings
     let lastEventId = 0;
-    const poolingDelay = 10 * 1000;
-    while(this.running) {
+  
+    while(!abortController.signal.aborted) {
       const rawEvents = (await this.props.octokit.activity.listPublicEvents({per_page: 100})).data
       let events = rawEvents.map((e) => eventInfo(e)).filter((e) => !!e) as IEventInfo[];
 
@@ -40,47 +83,70 @@ export default class EventList extends React.Component<IProps> {
       }
       lastEventId = eventId;
 
-      // Filter Events and remove duplicates
-      events = events.filter((e) => this.filterEvent(e))
+      // Filter events
+      events = events.filter((e) => !settings.filter.includes(Object.keys(EventType)[Object.values(EventType).indexOf(e.type)] as any))
+      // Remove duplicates
       events = events.filter((e) => this.state.events.findIndex(x => x.event.id === e.event.id) === -1)
 
       // Slowly push all events
       if(events.length === 0) {
-        console.log(`No new events with specified filter! Waiting for: ${poolingDelay / 1000} seconds!`)
-        await delay(poolingDelay)
+        console.log(`No new events with specified filter! Waiting for: ${settings.poolingSpeed / 1000} seconds!`)
+        await delay(settings.poolingSpeed)
       }
       for await(const e of events) {
-        if(!this.running) break;
+        if(abortController.signal.aborted) break;
         const newElements = this.state.events.slice()
         newElements.unshift(e)
         if(newElements.length > 100) {
           newElements.pop()
         }
-        const delayLen = poolingDelay / events.length
+        const delayLen = settings.poolingSpeed / events.length
         this.setState({events: newElements, animationDuration: Math.min(delayLen - 10, 250)});
         await delay(delayLen)
       }
     }
   }
 
-  componentWillUnmount() {
-    this.running = false;
-  }
-
-  filterEvent(event: IEventInfo): boolean {
-    return ![EventType.PUSH, null].includes(event.type)
+  onResetFilters(event: React.MouseEvent<HTMLElement>) {
+    const settings = Object.assign({}, this.props.settings);
+    settings.filter = ["PUSH" as EventType] as Array<EventType>
+    this.props.onSettingsUpdate(settings)
   }
 
   render() {
-    return (
-      <FlipMove 
-        enterAnimation='none'
-        duration={this.state.animationDuration < 240 ? 0 : this.state.animationDuration}
-      >
-        {this.state.events.map((eventInfo) => (
-          <Event key={eventInfo.event.id} eventInfo={eventInfo}></Event>
-        ))}
-      </FlipMove>
-    );
+    if(this.state.events.length > 0) {
+      return (
+        <FlipMove 
+          enterAnimation='none'
+          duration={this.state.animationDuration < 240 ? 0 : this.state.animationDuration}
+        >
+          {this.state.events.map((eventInfo) => (
+            <Event key={eventInfo.event.id} eventInfo={eventInfo}></Event>
+          ))}
+        </FlipMove>
+      );
+    } else {
+      const totalFilters = Object.values(EventType).length - 1
+      const selectedFilters = this.props.settings.filter.length
+      return (
+        <p className="lead text-center" style={{marginTop: '100px'}}>
+          {selectedFilters >= totalFilters ? 
+            "You have excluded all of the events. " : "Waiting for new events... "
+          }
+          {selectedFilters > 12 ? 
+            <Fragment>
+              <span>You can try to </span>
+              <Button
+                variant="link"
+                className="p-0"
+                onClick={this.onResetFilters}
+                style={{fontSize:"1.25rem", fontWeight: 300, verticalAlign: 'baseline'}}
+              >
+                  reset your filters
+              </Button>.
+            </Fragment> : ""}
+        </p>
+      )
+    }
   }
 }

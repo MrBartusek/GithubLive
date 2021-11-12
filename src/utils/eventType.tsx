@@ -1,5 +1,5 @@
 enum EventType {
-    COMMIT_COMMENT = "Commit Comment",
+    COMMIT_COMMENT = "Commit Comment", 
     CREATE_TAG = "Create Tag",
     CREATE_BRACH = "Create Branch",
     CREATE_REPO = "Create Repository",
