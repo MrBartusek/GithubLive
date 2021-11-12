@@ -1,4 +1,4 @@
-import "./EventFeed.scss"
+import "./EventList.scss"
 import React from 'react';
 import Event from '../Event/Event';
 import { Octokit } from '@octokit/rest';
@@ -16,7 +16,7 @@ export interface IProps {
   onMissRateUpdate: (num: number) => void;
 }
 
-export default class EventsFeed extends React.Component<IProps> {
+export default class EventList extends React.Component<IProps> {
   state: IState = {
     events: [],
     animationDuration: 100

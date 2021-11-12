@@ -3,7 +3,7 @@ import './App.scss';
 import AppNavbar from '../AppNavbar/AppNavbar';
 import { Fragment } from 'react';
 import { Container } from 'react-bootstrap';
-import EventsFeed from '../EventsFeed/EventsFeed';
+import EventList from '../EventsList/EventList';
 import { Octokit } from '@octokit/rest';
 import FeedSettings from '../FeedSettings/FeedSettings'
 
@@ -46,7 +46,7 @@ export default class App extends React.Component {
           <AppNavbar></AppNavbar>
           <Container className="mt-4">
             <FeedSettings missRate={this.getMissRate()} />
-            <EventsFeed octokit={this.state.octokit} onMissRateUpdate={this.onMissRateUpdate}></EventsFeed>
+            <EventList octokit={this.state.octokit} onMissRateUpdate={this.onMissRateUpdate}></EventList>
           </Container>
         </Fragment>
       );
