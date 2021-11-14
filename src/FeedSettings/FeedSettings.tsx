@@ -31,7 +31,12 @@ export default class FeedSettings extends React.Component<IProps> {
         <h3 className="mb-4">Settings</h3>
         <Row>
           <Col>
-            <Form.Label>Github Personal Token</Form.Label>
+            <Form.Label>
+              Github Personal Token {' - '}
+              <a href="https://github.com/settings/tokens/new?description=GithubLIVE" target="_blank" rel="noreferrer">
+                generate new token
+              </a>
+            </Form.Label>
             <Form.Control 
               type="password"
               placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
