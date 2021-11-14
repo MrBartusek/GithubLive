@@ -21,7 +21,7 @@ export interface IState{
 
 export default class EventFeed extends React.Component {
   state: IState = {
-    octokit: new Octokit(),
+    octokit: this.newOctokit(),
     missRateHistory: [],
     settings: {
       poolingSpeed: 60 * 1000,
@@ -37,6 +37,15 @@ export default class EventFeed extends React.Component {
     this.onMissRateUpdate = this.onMissRateUpdate.bind(this)
     this.onSettingsUpdate = this.onSettingsUpdate.bind(this)
     this.onMissRateClear = this.onMissRateClear.bind(this)
+  }
+
+  newOctokit(auth?: string) {
+    return new Octokit({
+      request: {
+        fetch: (input, init) => fetch(input, {...init, cache: 'no-cache'})
+      },
+      auth: auth
+    })
   }
 
   onMissRateUpdate(newRate: number) {
@@ -55,7 +64,7 @@ export default class EventFeed extends React.Component {
   async onSettingsUpdate(newSettings: IFeedSettings) {
     // Validate new github token
     if(this.state.settings.githubToken !== newSettings.githubToken) {
-      const octokit = new Octokit({auth: newSettings.githubToken});
+      const octokit = this.newOctokit(newSettings.githubToken);
       await octokit.rateLimit.get()
         .then((resp) => {
           const valid = resp.data.resources.core.limit > 1000

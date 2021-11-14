@@ -97,8 +97,8 @@ export default class EventList extends React.Component<IProps> {
 
       // Slowly push all events
       if(events.length === 0) {
-        console.log(`No new events with specified filter! Waiting for: ${settings.poolingSpeed / 1000} seconds!`)
-        await delay(settings.poolingSpeed)
+        console.log(`No new events with specified filter! Waiting for: ${this.props.settings.poolingSpeed / 1000} seconds!`)
+        await delay(this.props.settings.poolingSpeed)
       }
       for await(const e of events) {
         if(abortController.signal.aborted) break;
