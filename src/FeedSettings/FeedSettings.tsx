@@ -1,6 +1,6 @@
 import "./FeedSettings.scss"
 import React from 'react';
-import { IFeedSettings } from "../EventFeed/EventFeed";
+import { FeedStatus, IFeedSettings } from "../EventFeed/EventFeed";
 import Select from 'react-select'
 import EventType from "../utils/eventType";
 import { Container, Row, Col, Form} from "react-bootstrap";
@@ -9,7 +9,8 @@ import FeedStatistics from '../FeedStatistics/FeedStatistics'
 import RunningButton from "../RunningButton/RunningButton";
 
 export interface IProps {
-  settings: IFeedSettings,
+  settings: IFeedSettings
+  status: FeedStatus
   missRate: number
   onSettingsUpdate: (settings: IFeedSettings) => void;
 }
@@ -83,7 +84,12 @@ export default class FeedSettings extends React.Component<IProps> {
             <FeedStatistics missRate={this.props.missRate} poolingSpeed={settings.poolingSpeed} />
           </Col>
         </Row>
-        <RunningButton running={settings.running} onClick={this.handleRunningClick} />
+        <RunningButton
+          running={settings.running}
+          status={this.props.status}
+          showSpinner={[FeedStatus.FETCHING, FeedStatus.STARTING].includes(this.props.status)}
+          onClick={this.handleRunningClick}
+        />
       </Container>
     );
   }

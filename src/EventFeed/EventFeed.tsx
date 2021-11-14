@@ -6,17 +6,27 @@ import FeedSettings from '../FeedSettings/FeedSettings'
 import EventType from '../utils/eventType';
 
 export interface IFeedSettings{
-  poolingSpeed: number,
-  githubToken: string,
-  githubTokenValid: boolean,
+  poolingSpeed: number
+  githubToken: string
   filter: Array<EventType>
   running: boolean
+  githubTokenValid: boolean,
 }
+
+export enum FeedStatus {
+  STARTING = "starting",
+  PAUSED = "paused",
+  RUNNING = "running",
+  FETCHING = "fetching",
+  NO_NEW_EVENTS = "no new events"
+}
+
 
 export interface IState{
   octokit: Octokit,
   missRateHistory: Array<number>
-  settings: IFeedSettings
+  settings: IFeedSettings,
+  status: FeedStatus
 }
 
 export default class EventFeed extends React.Component {
@@ -29,7 +39,8 @@ export default class EventFeed extends React.Component {
       githubTokenValid: false,
       filter: ["PUSH" as EventType],
       running: true
-    }
+    },
+    status: FeedStatus.STARTING
   }
 
   constructor(props) {
@@ -37,6 +48,7 @@ export default class EventFeed extends React.Component {
     this.onMissRateUpdate = this.onMissRateUpdate.bind(this)
     this.onSettingsUpdate = this.onSettingsUpdate.bind(this)
     this.onMissRateClear = this.onMissRateClear.bind(this)
+    this.onStatusUpdate = this.onStatusUpdate.bind(this)
   }
 
   newOctokit(auth?: string) {
@@ -64,6 +76,7 @@ export default class EventFeed extends React.Component {
 
   async onSettingsUpdate(newSettings: IFeedSettings) {
     // Validate new github token
+    const newState: IState = Object.assign({}, this.state)
     if(this.state.settings.githubToken !== newSettings.githubToken) {
       const octokit = this.newOctokit(newSettings.githubToken);
       await octokit.rateLimit.get()
@@ -74,13 +87,23 @@ export default class EventFeed extends React.Component {
           newSettings.githubTokenValid = false
         })
         if(newSettings.githubTokenValid) {
-          this.setState({octokit: octokit})
+          newState.octokit = octokit
         }
     }
     if(!newSettings.githubTokenValid) {
       newSettings.poolingSpeed = 60 * 1000
     }
-    this.setState({settings: newSettings})
+
+    if(!newSettings.running) {
+      newState.status = FeedStatus.PAUSED
+    }
+    newState.settings = newSettings
+    this.setState(newState)
+  }
+
+  onStatusUpdate(newStatus: FeedStatus) {
+    if(!this.state.settings.running && this.state.status === FeedStatus.PAUSED) return;
+    this.setState({status: newStatus})
   }
 
   getMissRate(): number {
@@ -96,6 +119,7 @@ export default class EventFeed extends React.Component {
             <FeedSettings
               missRate={this.getMissRate()}
               settings={this.state.settings}
+              status={this.state.status}
               onSettingsUpdate={this.onSettingsUpdate}
             />
             <EventList 
@@ -104,6 +128,7 @@ export default class EventFeed extends React.Component {
               onMissRateUpdate={this.onMissRateUpdate}
               onMissRateClear={this.onMissRateClear}
               onSettingsUpdate={this.onSettingsUpdate}
+              onStatusUpdate={this.onStatusUpdate}
             ></EventList>
         </Container>
       );

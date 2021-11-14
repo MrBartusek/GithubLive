@@ -8,6 +8,7 @@ import { eventInfo, IEventInfo } from "../utils/events";
 import { IFeedSettings } from '../EventFeed/EventFeed'
 import EventType from "../utils/eventType";
 import { Button } from "react-bootstrap"
+import { FeedStatus } from "../EventFeed/EventFeed"
 
 export interface IState{
   events: Array<IEventInfo>,
@@ -15,11 +16,12 @@ export interface IState{
 }
 
 export interface IProps {
-  octokit: Octokit,
-  settings: IFeedSettings,
-  onMissRateUpdate: (num: number) => void,
-  onMissRateClear: () => void,
-  onSettingsUpdate: (settings: IFeedSettings) => void,
+  octokit: Octokit
+  settings: IFeedSettings
+  onMissRateUpdate: (num: number) => void
+  onMissRateClear: () => void
+  onSettingsUpdate: (settings: IFeedSettings) => void
+  onStatusUpdate: (status: FeedStatus) => void,
 }
 
 export default class EventList extends React.Component<IProps> {
@@ -44,6 +46,7 @@ export default class EventList extends React.Component<IProps> {
     const settings = this.props.settings
     if (prevSettings.running !== settings.running) {
       if(settings.running) {
+        this.props.onStatusUpdate(FeedStatus.STARTING)
         this.abortController = new AbortController()
         return await this.updateFeed(this.abortController)
       }
@@ -74,6 +77,7 @@ export default class EventList extends React.Component<IProps> {
     let lastEventId = 0;
   
     while(!abortController.signal.aborted) {
+      this.props.onStatusUpdate(FeedStatus.FETCHING)
       const initialPoolingSpeed = this.props.settings.poolingSpeed;
       const rawEvents = (await this.props.octokit.activity.listPublicEvents({
         per_page: 100
@@ -97,10 +101,11 @@ export default class EventList extends React.Component<IProps> {
 
       // Slowly push all events
       if(events.length === 0) {
-        console.log(`No new events with specified filter! Waiting for: ${this.props.settings.poolingSpeed / 1000} seconds!`)
+        this.props.onStatusUpdate(FeedStatus.NO_NEW_EVENTS)
         await delay(this.props.settings.poolingSpeed)
       }
       for await(const e of events) {
+        this.props.onStatusUpdate(FeedStatus.RUNNING)
         if(abortController.signal.aborted) break;
         const newElements = this.state.events.slice()
         newElements.unshift(e)
