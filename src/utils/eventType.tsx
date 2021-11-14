@@ -8,6 +8,7 @@ enum EventType {
     DELETE_REPO = "Delete Repository",
     FORK_REPO = "Fork",
     STAR_REPO = "Star",
+    COLLABORATOR_ADD = "Collaborator Add",
     PUSH = "Push",
     ISSUE = "Issue",
     ISSUE_COMMENT = "Issue Comment",

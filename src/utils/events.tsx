@@ -357,6 +357,19 @@ export function eventInfo(event: EndpointEventType) : IEventInfo | null {
             }
         }
     }
+    else if(event.type === "MemberEvent") {
+        const member = (event.payload as any).member;
+        const url = <a href={member.html_url}>{member.login}</a>
+        if(event.payload.action === "added") {
+            return {
+                ...result,
+                type: EventType.COLLABORATOR_ADD,
+                color: EventColors.EDIT,
+                icon: GoPerson,
+                header: <span>{actor} added {url} as collaborator to {repo}</span>,
+            }
+        }
+    }
     return {
         ...result,
         type: EventType.OTHER,
