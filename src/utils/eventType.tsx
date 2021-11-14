@@ -10,6 +10,7 @@ enum EventType {
     STAR_REPO = "Star",
     COLLABORATOR_ADD = "Collaborator Add",
     PUSH = "Push",
+    WIKI_EDIT = "Wiki Edit",
     ISSUE = "Issue",
     ISSUE_COMMENT = "Issue Comment",
     PR = "Pull Request",

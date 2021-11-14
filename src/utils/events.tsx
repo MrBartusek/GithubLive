@@ -1,5 +1,5 @@
 import { Endpoints } from "@octokit/types"
-import { GoComment, GoEye, GoGitBranch, GoGitMerge, GoGitPullRequest, GoIssueClosed, GoIssueOpened, GoIssueReopened, GoListUnordered, GoPerson, GoQuestion, GoRepo, GoRepoForked, GoRepoPush, GoStar, GoTag, GoTrashcan } from "react-icons/go"
+import { GoBook, GoComment, GoEye, GoGitBranch, GoGitMerge, GoGitPullRequest, GoIssueClosed, GoIssueOpened, GoIssueReopened, GoListUnordered, GoPerson, GoQuestion, GoRepo, GoRepoForked, GoRepoPush, GoStar, GoTag, GoTrashcan } from "react-icons/go"
 import { actorURL } from "./actor"
 import EventType from "./eventType";
 import { IconType } from "react-icons";
@@ -368,6 +368,15 @@ export function eventInfo(event: EndpointEventType) : IEventInfo | null {
                 icon: GoPerson,
                 header: <span>{actor} added {url} as collaborator to {repo}</span>,
             }
+        }
+    }
+    else if(event.type === "GollumEvent") {
+        return {
+            ...result,
+            type: EventType.WIKI_EDIT,
+            color: EventColors.EDIT,
+            icon: GoBook,
+            header: <span>{actor} updated wiki for {repo}</span>,
         }
     }
     return {
