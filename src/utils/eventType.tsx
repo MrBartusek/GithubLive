@@ -12,6 +12,7 @@ enum EventType {
     ISSUE = "Issue",
     ISSUE_COMMENT = "Issue Comment",
     PR = "Pull Request",
+    PR_COMMENT = "Pull Request Comment",
     PR_REVIEW = "Pull Request Review",
     PR_REVIEW_COMMENT = "Pull Request Review Comment",
     PUBLIC = "Public",

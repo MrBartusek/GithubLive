@@ -18,6 +18,7 @@ export interface IProps {
   octokit: Octokit,
   settings: IFeedSettings,
   onMissRateUpdate: (num: number) => void,
+  onMissRateClear: () => void,
   onSettingsUpdate: (settings: IFeedSettings) => void,
 }
 
@@ -58,7 +59,10 @@ export default class EventList extends React.Component<IProps> {
         return await this.updateFeed(this.abortController)
       }
     }
-    
+
+    if(prevSettings.poolingSpeed !== settings.poolingSpeed) {
+      this.props.onMissRateClear()
+    }
   }
 
   componentWillUnmount() {
@@ -70,7 +74,10 @@ export default class EventList extends React.Component<IProps> {
     let lastEventId = 0;
   
     while(!abortController.signal.aborted) {
-      const rawEvents = (await this.props.octokit.activity.listPublicEvents({per_page: 100})).data
+      const initialPoolingSpeed = this.props.settings.poolingSpeed;
+      const rawEvents = (await this.props.octokit.activity.listPublicEvents({
+        per_page: 100
+      })).data
       let events = rawEvents.map((e) => eventInfo(e)).filter((e) => !!e) as IEventInfo[];
 
       // Calculate missed events rate
@@ -100,7 +107,13 @@ export default class EventList extends React.Component<IProps> {
         if(newElements.length > 100) {
           newElements.pop()
         }
-        const delayLen = settings.poolingSpeed / events.length
+        if(this.props.settings.poolingSpeed !== initialPoolingSpeed) {
+          // Pooling speed was changed during processing so the miss rate
+          // shouldn't be calculated
+          lastEventId = 0
+        }
+
+        const delayLen = this.props.settings.poolingSpeed / events.length
         this.setState({events: newElements, animationDuration: Math.min(delayLen - 10, 250)});
         await delay(delayLen)
       }

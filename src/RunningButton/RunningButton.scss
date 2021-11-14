@@ -1,0 +1,12 @@
+.btn:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.btn-success:focus {
+    background-color: var(--bs-success);
+}
+
+.btn-danger:focus {
+    background-color: var(--bs-danger);
+}

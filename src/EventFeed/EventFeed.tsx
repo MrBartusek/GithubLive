@@ -8,6 +8,7 @@ import EventType from '../utils/eventType';
 export interface IFeedSettings{
   poolingSpeed: number,
   githubToken: string,
+  githubTokenValid: boolean,
   filter: Array<EventType>
   running: boolean
 }
@@ -23,8 +24,9 @@ export default class EventFeed extends React.Component {
     octokit: new Octokit(),
     missRateHistory: [],
     settings: {
-      poolingSpeed: 15 * 1000,
+      poolingSpeed: 60 * 1000,
       githubToken: "",
+      githubTokenValid: false,
       filter: ["PUSH" as EventType],
       running: true
     }
@@ -34,6 +36,7 @@ export default class EventFeed extends React.Component {
     super(props);
     this.onMissRateUpdate = this.onMissRateUpdate.bind(this)
     this.onSettingsUpdate = this.onSettingsUpdate.bind(this)
+    this.onMissRateClear = this.onMissRateClear.bind(this)
   }
 
   onMissRateUpdate(newRate: number) {
@@ -45,21 +48,36 @@ export default class EventFeed extends React.Component {
     this.setState({missRateHistory: newHistory})
   }
 
-  onSettingsUpdate(newSettings: IFeedSettings) {
-    this.setState({
-      settings: newSettings,
-      octokit: new Octokit({
-        auth: newSettings.githubToken
-      })
-    })
+  onMissRateClear() {
+    this.setState({missRateHistory: []})
   }
 
-  getMissRate(): string {
+  async onSettingsUpdate(newSettings: IFeedSettings) {
+    // Validate new github token
+    if(this.state.settings.githubToken !== newSettings.githubToken) {
+      const octokit = new Octokit({auth: newSettings.githubToken});
+      await octokit.rateLimit.get()
+        .then((resp) => {
+          const valid = resp.data.resources.core.limit > 1000
+          newSettings.githubTokenValid = valid
+        }).catch(() => {
+          newSettings.githubTokenValid = false
+        })
+        if(newSettings.githubTokenValid) {
+          this.setState({octokit: octokit})
+        }
+    }
+    if(!newSettings.githubTokenValid) {
+      newSettings.poolingSpeed = 60 * 1000
+    }
+    this.setState({settings: newSettings})
+  }
+
+  getMissRate(): number {
     const history = this.state.missRateHistory;
-    if(history.length === 0) return "**%"
+    if(history.length === 0) return -1
     const average = Number(history.reduce((a,b) => a + b, 0)) / history.length;
-    const percent = average * 100;
-    return Math.round(percent * 10) / 10 + "%"
+    return average
   }
 
   render() {
@@ -74,6 +92,7 @@ export default class EventFeed extends React.Component {
               octokit={this.state.octokit}
               settings={this.state.settings}
               onMissRateUpdate={this.onMissRateUpdate}
+              onMissRateClear={this.onMissRateClear}
               onSettingsUpdate={this.onSettingsUpdate}
             ></EventList>
         </Container>

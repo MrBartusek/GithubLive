@@ -139,31 +139,62 @@ export function eventInfo(event: EndpointEventType) : IEventInfo | null {
     }
     else if(event.type === "IssueCommentEvent") {
         const issue = <a href={event.payload.issue?.html_url} className="font-weight-bold">#{event.payload.issue?.number}</a>
-        if(event.payload.action === "created") {
-            return {
-                ...result,
-                type: EventType.ISSUE_COMMENT,
-                color: EventColors.COMMENT,
-                icon: GoComment,
-                header: <span>{actor} commented on issue {issue} in {repo}</span>
+        if(event.payload.issue?.pull_request !== undefined) {
+            if(event.payload.action === "created") {
+                return {
+                    ...result,
+                    type: EventType.PR_COMMENT,
+                    color: EventColors.COMMENT,
+                    icon: GoComment,
+                    header: <span>{actor} commented on pull request {issue} in {repo}</span>
+                }
+            }
+            else if(event.payload.action === "deleted") {
+                return {
+                    ...result,
+                    type: EventType.PR_COMMENT,
+                    color: EventColors.DANGER,
+                    icon: GoComment,
+                    header: <span>{actor} deleted comment on pull request {issue} in {repo}</span>
+                }
+            }
+            else if(event.payload.action === "edited") {
+                return {
+                    ...result,
+                    type: EventType.PR_COMMENT,
+                    color: EventColors.EDIT,
+                    icon: GoComment,
+                    header: <span>{actor} edited comment on pull request {issue} in {repo}</span>
+                }
             }
         }
-        else if(event.payload.action === "deleted") {
-            return {
-                ...result,
-                type: EventType.ISSUE_COMMENT,
-                color: EventColors.DANGER,
-                icon: GoComment,
-                header: <span>{actor} deleted comment on issue {issue} in {repo}</span>
+        else {
+            if(event.payload.action === "created") {
+                return {
+                    ...result,
+                    type: EventType.ISSUE_COMMENT,
+                    color: EventColors.COMMENT,
+                    icon: GoComment,
+                    header: <span>{actor} commented on issue {issue} in {repo}</span>
+                }
             }
-        }
-        else if(event.payload.action === "edited") {
-            return {
-                ...result,
-                type: EventType.ISSUE_COMMENT,
-                color: EventColors.EDIT,
-                icon: GoComment,
-                header: <span>{actor} edited comment on issue {issue} in {repo}</span>
+            else if(event.payload.action === "deleted") {
+                return {
+                    ...result,
+                    type: EventType.ISSUE_COMMENT,
+                    color: EventColors.DANGER,
+                    icon: GoComment,
+                    header: <span>{actor} deleted comment on issue {issue} in {repo}</span>
+                }
+            }
+            else if(event.payload.action === "edited") {
+                return {
+                    ...result,
+                    type: EventType.ISSUE_COMMENT,
+                    color: EventColors.EDIT,
+                    icon: GoComment,
+                    header: <span>{actor} edited comment on issue {issue} in {repo}</span>
+                }
             }
         }
     }

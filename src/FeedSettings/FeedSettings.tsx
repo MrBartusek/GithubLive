@@ -1,15 +1,17 @@
 import "./FeedSettings.scss"
 import React from 'react';
 import { IFeedSettings } from "../EventFeed/EventFeed";
-import { Button } from 'react-bootstrap'
-import { BsPauseFill, BsPlayFill, BsInfoSquare} from 'react-icons/bs'
+import { Alert} from 'react-bootstrap'
 import Select from 'react-select'
 import EventType from "../utils/eventType";
-import { Container, Row, Col, Form } from "react-bootstrap";
+import { Container, Row, Col, Form} from "react-bootstrap";
+import RangeSlider from 'react-bootstrap-range-slider';
+import FeedStatistics from '../FeedStatistics/FeedStatistics'
+import RunningButton from "../RunningButton/RunningButton";
 
 export interface IProps {
   settings: IFeedSettings,
-  missRate: string,
+  missRate: number
   onSettingsUpdate: (settings: IFeedSettings) => void;
 }
 
@@ -18,17 +20,44 @@ export default class FeedSettings extends React.Component<IProps> {
     super(props)
     this.handleRunningClick = this.handleRunningClick.bind(this)
     this.handleFilterChange = this.handleFilterChange.bind(this)
+    this.handlePoolingChange = this.handlePoolingChange.bind(this)
+    this.handleTokenChange = this.handleTokenChange.bind(this)
   }
 
   render() {
     const settings = this.props.settings
-    const missRate = this.props.missRate
     return (
       <Container className="settings">
         <h3 className="mb-4">Settings</h3>
         <Row>
-          <Col>pat</Col>
-          <Col>pooling rate</Col>
+          <Col>
+            <Form.Label>Github Personal Token</Form.Label>
+            <Form.Control 
+              type="password"
+              placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              isInvalid={settings.githubToken !== "" && !settings.githubTokenValid}
+              isValid={settings.githubToken !== "" && settings.githubTokenValid}
+              onChange={this.handleTokenChange}
+            />
+            <Form.Text className="text-muted">
+              Providing authentication token is not required but highly recommended.
+            </Form.Text>
+          </Col>
+          <Col>
+            <Form.Label>Pooling speed</Form.Label>
+            <div className="d-flex align-items-center">
+              <span>Fast</span>
+              <RangeSlider
+                min={15} 
+                max={100}
+                step={5}
+                disabled={!settings.githubTokenValid}
+                value={settings.poolingSpeed / 1000}
+                onChange={this.handlePoolingChange}
+              />
+              <span>Slow</span>
+            </div>
+          </Col>
         </Row>
         <Row>
           <Col>
@@ -47,28 +76,31 @@ export default class FeedSettings extends React.Component<IProps> {
         </Row>
         <Row>
           <Col>
-            <BsInfoSquare size={19} /> Using the current pooling rate, this feed display only around <b>{missRate}</b> of the total Github activity.
+            <FeedStatistics missRate={this.props.missRate} poolingSpeed={settings.poolingSpeed} />
           </Col>
         </Row>
-        <div className="d-flex justify-content-end mt-3">
-          <Button 
-            className="float-right"
-            size="sm"
-            style={{width: 42, height: 42}}
-            variant={settings.running ? "success" : "danger"}
-            onClick={this.handleRunningClick}>
-              {settings.running ? <BsPauseFill size={24}/> : <BsPlayFill size={24}/>}
-            </Button>
-        </div>
+        <RunningButton running={settings.running} onClick={this.handleRunningClick} />
       </Container>
     );
   }
 
-  handleFilterChange = (selectedOption) => {
+  handleFilterChange(selectedOption) {
     const settings = Object.assign({}, this.props.settings);
     settings.filter = selectedOption.map(x => x.value)
     this.props.onSettingsUpdate(settings)
   };
+
+  handlePoolingChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const settings = Object.assign({}, this.props.settings);
+    settings.poolingSpeed = e.target.valueAsNumber * 1000
+    this.props.onSettingsUpdate(settings)
+  }
+
+  handleTokenChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const settings = Object.assign({}, this.props.settings);
+    settings.githubToken = e.target.value
+    this.props.onSettingsUpdate(settings)
+  }
 
   handleRunningClick(e: React.MouseEvent<HTMLElement>) {
     const settings = Object.assign({}, this.props.settings);
