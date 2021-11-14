@@ -1,7 +1,6 @@
 import "./FeedSettings.scss"
 import React from 'react';
 import { IFeedSettings } from "../EventFeed/EventFeed";
-import { Alert} from 'react-bootstrap'
 import Select from 'react-select'
 import EventType from "../utils/eventType";
 import { Container, Row, Col, Form} from "react-bootstrap";
