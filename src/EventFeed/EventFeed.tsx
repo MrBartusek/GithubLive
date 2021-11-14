@@ -42,6 +42,7 @@ export default class EventFeed extends React.Component {
   newOctokit(auth?: string) {
     return new Octokit({
       request: {
+        // A small hack to don't cache any octokit calls
         fetch: (input, init) => fetch(input, {...init, cache: 'no-cache'})
       },
       auth: auth

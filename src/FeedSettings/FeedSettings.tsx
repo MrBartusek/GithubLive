@@ -29,8 +29,8 @@ export default class FeedSettings extends React.Component<IProps> {
     return (
       <Container className="settings">
         <h3 className="mb-4">Settings</h3>
-        <Row>
-          <Col>
+        <Row xs={1} md={2}>
+          <Col className="col-md-6">
             <Form.Label>
               Github Personal Token {' - '}
               <a href="https://github.com/settings/tokens/new?description=GithubLIVE" target="_blank" rel="noreferrer">
@@ -48,7 +48,7 @@ export default class FeedSettings extends React.Component<IProps> {
               Providing authentication token is not required but highly recommended.
             </Form.Text>
           </Col>
-          <Col>
+          <Col className="col-md-6">
             <Form.Label>Pooling speed</Form.Label>
             <div className="d-flex align-items-center">
               <span>Fast</span>
@@ -64,8 +64,8 @@ export default class FeedSettings extends React.Component<IProps> {
             </div>
           </Col>
         </Row>
-        <Row>
-          <Col>
+        <Row className="mt-2">
+          <Col className="col-md-12">
             <Form.Label>Events to exclude</Form.Label>
             <Select
               options={
@@ -79,8 +79,8 @@ export default class FeedSettings extends React.Component<IProps> {
             />
           </Col>
         </Row>
-        <Row>
-          <Col>
+        <Row className="mt-3">
+          <Col className="col-md-12">
             <FeedStatistics missRate={this.props.missRate} poolingSpeed={settings.poolingSpeed} />
           </Col>
         </Row>
