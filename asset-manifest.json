@@ -1,20 +1,20 @@
 {
   "files": {
-    "main.css": "/static/css/main.aa5fa649.chunk.css",
-    "main.js": "/static/js/main.dc6a953c.chunk.js",
-    "main.js.map": "/static/js/main.dc6a953c.chunk.js.map",
-    "runtime-main.js": "/static/js/runtime-main.3f25942e.js",
-    "runtime-main.js.map": "/static/js/runtime-main.3f25942e.js.map",
-    "static/css/2.4165cb34.chunk.css": "/static/css/2.4165cb34.chunk.css",
-    "static/js/2.6e91878a.chunk.js": "/static/js/2.6e91878a.chunk.js",
-    "static/js/2.6e91878a.chunk.js.map": "/static/js/2.6e91878a.chunk.js.map",
-    "index.html": "/index.html",
-    "static/css/2.4165cb34.chunk.css.map": "/static/css/2.4165cb34.chunk.css.map",
-    "static/css/main.aa5fa649.chunk.css.map": "/static/css/main.aa5fa649.chunk.css.map",
-    "static/js/2.6e91878a.chunk.js.LICENSE.txt": "/static/js/2.6e91878a.chunk.js.LICENSE.txt"
+    "main.css": "/GithubLive/static/css/main.aa5fa649.chunk.css",
+    "main.js": "/GithubLive/static/js/main.dc6a953c.chunk.js",
+    "main.js.map": "/GithubLive/static/js/main.dc6a953c.chunk.js.map",
+    "runtime-main.js": "/GithubLive/static/js/runtime-main.91f96b47.js",
+    "runtime-main.js.map": "/GithubLive/static/js/runtime-main.91f96b47.js.map",
+    "static/css/2.4165cb34.chunk.css": "/GithubLive/static/css/2.4165cb34.chunk.css",
+    "static/js/2.6e91878a.chunk.js": "/GithubLive/static/js/2.6e91878a.chunk.js",
+    "static/js/2.6e91878a.chunk.js.map": "/GithubLive/static/js/2.6e91878a.chunk.js.map",
+    "index.html": "/GithubLive/index.html",
+    "static/css/2.4165cb34.chunk.css.map": "/GithubLive/static/css/2.4165cb34.chunk.css.map",
+    "static/css/main.aa5fa649.chunk.css.map": "/GithubLive/static/css/main.aa5fa649.chunk.css.map",
+    "static/js/2.6e91878a.chunk.js.LICENSE.txt": "/GithubLive/static/js/2.6e91878a.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.3f25942e.js",
+    "static/js/runtime-main.91f96b47.js",
     "static/css/2.4165cb34.chunk.css",
     "static/js/2.6e91878a.chunk.js",
     "static/css/main.aa5fa649.chunk.css",
