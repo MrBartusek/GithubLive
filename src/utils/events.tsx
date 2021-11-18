@@ -32,18 +32,16 @@ export function eventInfo(event: EndpointEventType) : IEventInfo | null {
     }
     const actor = actorElement(event)
     const repo = repoElement(event)
-    const commonRef = <span><code>{(event.payload as any).ref}</code> ({(event.payload as any).ref_type})</span>
+    const commonRef = commonRefElement(event)
 
     if(event.type === "CommitCommentEvent") {
-        const commitId = (event.payload.comment as any).commit_id;
-        const url = <a href={`https://github.com/${event.repo.name}/commit/${commitId}`}><code>{commitId.substr(0, 8)}</code></a>
-
+        const commit = commitForCommentElement(event)
         return {
             ...result,
             type: EventType.COMMIT_COMMENT,
             icon: GoComment,
             color: EventColors.COMMENT,
-            header: <span>{actor} commented on {url} in {repo}</span>
+            header: <span>{actor} commented on {commit} in {repo}</span>
         }
     }
     else if(event.type === "CreateEvent") {
@@ -105,25 +103,24 @@ export function eventInfo(event: EndpointEventType) : IEventInfo | null {
         }
     }
     else if(event.type === "ForkEvent") {
+        const forkee = forkeeElement(event)
         return {
             ...result,
             type: EventType.FORK_REPO,
             color: EventColors.INFO,
             icon: GoRepoForked,
-            header: <span>{actor} forked {repo}</span>,
+            header: <span>{actor} forked {forkee} from {repo}</span>,
         }
     }
     else if(event.type === "PushEvent") {
-        const commits = (event.payload as any).commits
-        if(commits.length === 0) return null
-        const commitId = commits[0].sha
-        const commit = <a href={`https://github.com/${event.repo.name}/commit/${commitId}`}><code>{commitId.substr(0, 8)}</code></a>
+        const commit = commitElement(event)
+        if (commit === null) return null
         return {
             ...result,
             type: EventType.PUSH,
             color: EventColors.MISC,
             icon: GoRepoPush,
-            header: <span>{actor} pushed {commits > 0 ? commits.length + " commits" : commit} into {repo}</span>,
+            header: <span>{actor} pushed {commit} into {repo}</span>,
         }
     }
     else if(event.type === "WatchEvent") {
@@ -138,7 +135,7 @@ export function eventInfo(event: EndpointEventType) : IEventInfo | null {
         }
     }
     else if(event.type === "IssueCommentEvent") {
-        const issue = <a href={event.payload.issue?.html_url} className="font-weight-bold">#{event.payload.issue?.number}</a>
+        const issue = issueElement(event)
         if(event.payload.issue?.pull_request !== undefined) {
             if(event.payload.action === "created") {
                 return {
@@ -199,7 +196,7 @@ export function eventInfo(event: EndpointEventType) : IEventInfo | null {
         }
     }
     else if(event.type === "IssuesEvent") {
-        const issue = <a href={event.payload.issue?.html_url} className="font-weight-bold">#{event.payload.issue?.number}</a>
+        const issue = issueElement(event)
         if(event.payload.action === "opened") {
             return {
                 ...result,
@@ -269,28 +266,26 @@ export function eventInfo(event: EndpointEventType) : IEventInfo | null {
         }
     }
     else if(event.type === "PullRequestReviewEvent") {
-        const pr = (event.payload as any).pull_request
-        const url = <a href={pr.html_url}className="font-weight-bold">#{pr.number}</a>
+        const pullRequest = pullRequestElement(event)
         if(event.payload.action === "created") {
             return {
                 ...result,
                 type: EventType.PR_REVIEW,
                 color: EventColors.INFO,
                 icon: GoEye,
-                header: <span>{actor} reviewed {url} in {repo}</span>
+                header: <span>{actor} reviewed {pullRequest} in {repo}</span>
             }
         }
     }
     else if(event.type === "PullRequestReviewCommentEvent") {
-        const pr = (event.payload as any).pull_request
-        const url = <a href={pr.html_url}className="font-weight-bold">#{pr.number}</a>
+        const pullRequest = pullRequestElement(event)
         if(event.payload.action === "created") {
             return {
                 ...result,
                 type: EventType.PR_REVIEW_COMMENT,
                 color: EventColors.COMMENT,
                 icon: GoComment,
-                header: <span>{actor} commented on review of {url} in {repo}</span>
+                header: <span>{actor} commented on review of {pullRequest} in {repo}</span>
             }
         }
     }
@@ -304,15 +299,14 @@ export function eventInfo(event: EndpointEventType) : IEventInfo | null {
         }
     }
     else if(event.type === "PullRequestEvent") {
-        const pullRequest = (event.payload as any).pull_request
-        const url = <a href={pullRequest.html_url} className="font-weight-bold">#{pullRequest.number}</a>
+        const pullRequest = pullRequestElement(event)
         if(event.payload.action === "opened") {
             return {
                 ...result,
                 type: EventType.PR,
                 color: EventColors.SUCCESS,
                 icon: GoGitPullRequest,
-                header: <span>{actor} opened pull request {url} in {repo}</span>,
+                header: <span>{actor} opened pull request {pullRequest} in {repo}</span>,
             }
         }
         else if(event.payload.action === "reopened") {
@@ -321,52 +315,49 @@ export function eventInfo(event: EndpointEventType) : IEventInfo | null {
                 type: EventType.PR,
                 color: EventColors.SUCCESS,
                 icon: GoGitPullRequest,
-                header: <span>{actor} reopened pull request {url} in {repo}</span>,
+                header: <span>{actor} reopened pull request {pullRequest} in {repo}</span>,
             }
         }
-        else if(event.payload.action === "closed" && pullRequest.merged) {
+        else if(event.payload.action === "closed" && (event.payload as any).pull_request.merged) {
             return {
                 ...result,
                 type: EventType.PR,
                 color: EventColors.MERGE,
                 icon: GoGitMerge,
-                header: <span>{actor} merged pull request {url} in {repo}</span>,
+                header: <span>{actor} merged pull request {pullRequest} in {repo}</span>,
             }
         }
-        else if(event.payload.action === "closed" && !pullRequest.merged) {
+        else if(event.payload.action === "closed" && !(event.payload as any).pull_request.merged) {
             return {
                 ...result,
                 type: EventType.PR,
                 color: EventColors.DANGER,
                 icon: GoGitPullRequest,
-                header: <span>{actor} closed pull request {url} in {repo}</span>,
+                header: <span>{actor} closed pull request {pullRequest} in {repo}</span>,
             }
         }
     }
     else if(event.type === "ReleaseEvent") {
-        const release = (event.payload as any).release;
-        const name = release.name && release.name.length > 0 ? release.name : release.tag
-        const url = <a href={release.html_url}><code>{name}</code></a>
+        const release = releaseElement(event)
         if(event.payload.action === "published") {
             return {
                 ...result,
                 type: EventType.RELEASE,
                 color: EventColors.INFO,
                 icon: GoListUnordered,
-                header: <span>{actor} published {url} (release) in {repo}</span>,
+                header: <span>{actor} published {release} (release) in {repo}</span>,
             }
         }
     }
     else if(event.type === "MemberEvent") {
-        const member = (event.payload as any).member;
-        const url = <a href={member.html_url}>{member.login}</a>
+        const member = memberElement(event)
         if(event.payload.action === "added") {
             return {
                 ...result,
                 type: EventType.COLLABORATOR_ADD,
                 color: EventColors.EDIT,
                 icon: GoPerson,
-                header: <span>{actor} added {url} as collaborator to {repo}</span>,
+                header: <span>{actor} added {member} as collaborator to {repo}</span>,
             }
         }
     }
@@ -401,4 +392,54 @@ function actorElement(event: EndpointEventType) {
 function repoElement(event: EndpointEventType) {
     const repo = event.repo;
     return <a href={"https://github.com/" + repo.name}>{repo.name}</a>
+}
+
+function commonRefElement(event: EndpointEventType) {
+    return <span><code>{(event.payload as any).ref}</code> ({(event.payload as any).ref_type})</span>
+}
+
+function memberElement(event: EndpointEventType) {
+    const member = (event.payload as any).member;
+    return <a href={member.html_url}>{member.login}</a>
+}
+
+function releaseElement(event: EndpointEventType) {
+    const release = (event.payload as any).release;
+    const name = release.name && release.name.length > 0 ? release.name : release.tag
+    return <a href={release.html_url}><code>{name}</code></a>
+}
+
+function pullRequestElement(event: EndpointEventType) {
+    const pullRequest = (event.payload as any).pull_request
+    return <a href={pullRequest.html_url} className="font-weight-bold">#{pullRequest.number}</a>
+}
+
+function issueElement(event: EndpointEventType) {
+    const issue = event.payload.issue
+    return <a href={issue?.html_url} className="font-weight-bold">#{issue?.number}</a>
+}
+
+function commitElement(event: EndpointEventType) {
+    const commits = (event.payload as any).commits
+    if(commits.length === 0) {
+        return null
+    }
+    else if(commits.length === 1) {
+        const commitId = commits[0].sha
+        return <a href={`https://github.com/${event.repo.name}/commit/${commitId}`}><code>{commitId.substr(0, 8)}</code></a>
+    }
+    else {
+        return <span><code>{commits.length}</code> commits</span>
+    }   
+}
+
+function commitForCommentElement(event: EndpointEventType) {
+    const commitId = (event.payload.comment as any).commit_id;
+    return <a href={`https://github.com/${event.repo.name}/commit/${commitId}`}><code>{commitId.substr(0, 8)}</code></a>
+}
+
+function forkeeElement(event: EndpointEventType) {
+    const forkee = (event.payload as any).forkee
+    return <a href={forkee.html_url}>{forkee.full_name}</a>
+
 }
