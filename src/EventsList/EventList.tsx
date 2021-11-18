@@ -24,14 +24,16 @@ export interface IProps {
   onStatusUpdate: (status: FeedStatus) => void,
 }
 
-export default class EventList extends React.Component<IProps> {
-  state: IState = {
-    events: [],
-    animationDuration: 100
-  }
-  abortController: AbortController = new AbortController()
+export default class EventList extends React.Component<IProps, IState> {
+  abortController: AbortController
+
   constructor(props) {
     super(props)
+    this.state = {
+      events: [],
+      animationDuration: 100
+    }
+    this.abortController = new AbortController()
     this.onResetFilters = this.onResetFilters.bind(this)
   }
 
